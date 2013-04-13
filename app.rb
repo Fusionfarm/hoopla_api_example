@@ -50,6 +50,9 @@ end
 post '/search-places' do
 end
 
+# Example:
+#
+#     /events/?event_categories[]=1
 get '/events/' do
   @stylesheet_url = params[:stylesheet_url]
   @stylesheet_url = '/default.css' if params[:stylesheet_url].nil?
