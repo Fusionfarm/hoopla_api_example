@@ -1,1 +1,43 @@
-%h1 testing
+%style
+  label { display: block; margin: 15px 0 0; }
+  input[type=submit] { margin-top: 15px; }
+
+%form{ action: "/events"}
+  %label Name
+  %input{ type: "text", name: "name", id: "event-name" }
+  %br
+  %label Description
+  %textarea{ name: "description", id: "description", rows: 5, cols: 75 }
+  %br
+  %label Tags
+  %input{ type: "text", name: "tags", id: "event-tags" }
+  %label Categories
+  %select{ name: "category", id: "category" }
+    %option{ value: "-1" }
+    -@categories.each do |category|
+      %option{ value: category }
+        = category
+  %br
+  %label Location
+  %br
+  %label Search for the event location
+  %input{ type: "text", name: "place-keywords", id: "place-keywords" }
+  %button{ id: "place-search" } Search
+  %br
+  %input{ type: "submit" }
+
+%script{ src: "//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" }
+
+:javascript
+  $(document).ready(function() {
+    $("#place-search").on('click', function(e) {
+      e.preventDefault();
+      alert($("#place-keywords").val());
+    });
+    $("#place-keywords").on('keypress', function(e) {
+      if (e.which == 13) {
+        alert($("#place-keywords").val());
+        e.preventDefault();
+      }
+    });
+  });
