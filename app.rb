@@ -67,5 +67,9 @@ get '/events/' do
   response = HTTParty.get("http://events.hooplanow.com/api/v1/events.json?key=#{config['apikey']}&#{other_params}")
   @events = MultiJson.load(response.body, :symbolize_keys => true)
 
-  haml :'events/index'
+  if params[:widget] == "true"
+    haml :'events/widget'
+  else
+    haml :'events/index'
+  end
 end
