@@ -62,7 +62,7 @@ get '/events/' do
       key_value = "#{key}=#{value}"
     end
     key_value
-  end.join('%')
+  end.join('&')
 
   response = HTTParty.get("http://events.hooplanow.com/api/v1/events.json?key=#{config['apikey']}&#{other_params}")
   @events = MultiJson.load(response.body, :symbolize_keys => true)
