@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'httparty'
 require 'haml'
+require 'multi_json'
 
 set :views, Proc.new { File.join(root, "views") }
 
@@ -47,4 +48,10 @@ post '/events' do
 end
 
 post '/search-places' do
+end
+
+get '/events/' do
+  response = HTTParty.get("http://events.hooplanow.com/api/v1/events.json?key=#{config['apikey']}")
+  @events = MultiJson.load(response.body, :symbolize_keys => true)
+  haml :'events/index'
 end
