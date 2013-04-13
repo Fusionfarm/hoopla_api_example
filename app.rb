@@ -16,7 +16,11 @@ get '/events/new' do
 end
 
 get '/events/' do
+  @stylesheet_url = params[:stylesheet_url]
+  @stylesheet_url = '/default.css' if params[:stylesheet_url].nil?
+
   response = HTTParty.get("http://events.hooplanow.com/api/v1/events.json?key=#{config['apikey']}")
   @events = MultiJson.load(response.body, :symbolize_keys => true)
+
   haml :'events/index'
 end
