@@ -1,43 +1,129 @@
-%style
-  label { display: block; margin: 15px 0 0; }
-  input[type=submit] { margin-top: 15px; }
+%html
+  %head
+    %style
+      label { display: block; margin: 15px 0 0; }
+      input[type=submit] { margin-top: 15px; }
 
-%form{ action: "/events"}
-  %label Name
-  %input{ type: "text", name: "name", id: "event-name" }
-  %br
-  %label Description
-  %textarea{ name: "description", id: "description", rows: 5, cols: 75 }
-  %br
-  %label Tags
-  %input{ type: "text", name: "tags", id: "event-tags" }
-  %label Categories
-  %select{ name: "category", id: "category" }
-    %option{ value: "-1" }
-    -@categories.each do |category|
-      %option{ value: category }
-        = category
-  %br
-  %label Location
-  %br
-  %label Search for the event location
-  %input{ type: "text", name: "place-keywords", id: "place-keywords" }
-  %button{ id: "place-search" } Search
-  %br
-  %input{ type: "submit" }
+  %body
+    %form{ action: "/events"}
+      %label Name
+      %input{ type: "text", name: "name", id: "event-name" }
+      %br
+      %label Description
+      %textarea{ name: "description", id: "description", rows: 5, cols: 75 }
+      %br
+      %label Event Date
+      %input{ type: "text", name: "event_date", id: "datepicker" }
+      %label Start Time
+      %input{ type: "text", name: "start_time", id: "start_time"}
+      %label End Time
+      %input{ type: "text", name: "end_time", id: "end_time"}
+      %label Tags
+      %input{ type: "text", name: "tags", id: "event-tags" }
+      %label Categories
+      %select{ name: "category", id: "category" }
+        %option{ value: "-1" }
+        -@categories.each do |category|
+          %option{ value: category }
+            = category
+      %br
+      %label Location
+      #place-data
+      %label Search for the event location
+      %input{ type: "text", name: "place-keywords", id: "place-keywords" }
+      %button{ id: "place-search" } Search
+      #place-results  
+      %br
+      %input{ type: "submit" }
 
-%script{ src: "//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" }
+    %script{ src: "//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" }
 
-:javascript
-  $(document).ready(function() {
-    $("#place-search").on('click', function(e) {
-      e.preventDefault();
-      alert($("#place-keywords").val());
-    });
-    $("#place-keywords").on('keypress', function(e) {
-      if (e.which == 13) {
-        alert($("#place-keywords").val());
-        e.preventDefault();
+    %script{ src: "//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js", type: "text/javascript" }
+    %script{ src: "/javascript/jquery.timepicker.min.js", type: "text/javascript" }
+    %script{ src: "/javascript/lib/base.js", type: "text/javascript" }
+    
+    %link{ href: "/javascript/jquery.timepicker.css", rel: "stylesheet" }
+    %link{ href: "/javascript/lib/base.css", rel: "stylesheet" }
+    %link{ href: "//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/themes/vader/jquery-ui.min.css", rel: "stylesheet" }
+
+    :javascript
+      $(document).ready(function() {
+        $( "#datepicker" ).datepicker({ monthNamesShort: [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], changeMonth: true, dateFormat: 'MM dd, yy' });
+        
+        $('#start_time').timepicker();
+        $("#end_time").timepicker();
+
+        $("#place-search").on('click', function(e) {
+          e.preventDefault();
+          searchPlaces($("#place-keywords").val(), 1);
+        });
+
+        $("#place-keywords").on('keypress', function(e) {
+          if (e.which == 13) {
+            searchPlaces($("#place-keywords").val(), 1);
+            e.preventDefault();
+          }
+        });
+
+        $("#place-results").delegate('input[name=place_id]', 'change', function(e) {
+          var place_id = $("input[name=place_id]:checked").val();
+          selectPlace(place_id);
+        });
+      });
+
+      displayPlaceResults = function(data, textStatus, jqXHR) {
+        $("#place-results").html("");
+        var table = $("<table></table>");
+        table.append($("<tr><th>Select</th><th>Name</th><th>Address</th><th>City</th><th>State</th></tr>"));
+        $("#place-results").append(table);
+        $(data).each(function(index) {
+          var placeRow = buildPlaceRow(this);
+          table.append(placeRow);
+        });
+      };
+
+      searchPlaces = function(keywords, page) {
+        $.ajax({
+          type: "POST",
+          url: "/search-places.json",
+          data: { keywords: keywords, page: page },
+          success: displayPlaceResults,
+          dataType: 'json'
+        });
       }
-    });
-  });
+
+      buildPlaceRow = function(place) {
+        var row = $("<tr></tr>")
+        var radio = $("<input></input>").attr({ name: "place_id", value: place.id, type: "radio" })
+        row.append($("<td></td>").append(radio));
+        row.append($("<td></td>").append(place.name));
+        row.append($("<td></td>").append(place.address_1));
+        row.append($("<td></td>").append(place.city));
+        row.append($("<td></td>").append(place.state));
+        return row;
+      }
+
+      displayPlacedata = function(data, textStatus, jqXHR) {
+        $("#place-results").html("");
+        $("#place-data").append($("<input></input>").attr({ name: "place_id", type: "hidden", value: data.id }));
+        $("#place-data").append($("<div></div>").append(data.name));
+        $("#place-data").append($("<div></div>").append(data.address_1));
+        if (data.address_2 != "") {
+          $("#place-data").append($("<div></div>").append(data.address_2));
+        }
+        var city_state_div = $("<div></div>");
+        city_state_div.append(data.city + ", ");
+        city_state_div.append(data.state + " ");
+        city_state_div.append(data.zip);
+        $("#place-data").append(city_state_div);
+      }
+
+      selectPlace = function(place_id) {
+        $.ajax({
+          type: "GET",
+          url: "/place.json",
+          data: { id: place_id },
+          success: displayPlacedata,
+          dataType: 'json'
+        });
+      }

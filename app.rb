@@ -2,6 +2,7 @@ require 'sinatra'
 require 'httparty'
 require 'haml'
 require 'multi_json'
+require 'json'
 
 set :views, Proc.new { File.join(root, "views") }
 
@@ -47,7 +48,20 @@ end
 post '/events' do
 end
 
-post '/search-places' do
+post '/search-places.json' do
+  content_type :json
+  response = HTTParty.get("http://events.hooplanow.com/api/v1/places.json", 
+    query: { key: config['apikey'], keywords: params[:keywords] })
+  @places = response.body
+  @places
+end
+
+get '/place.json' do
+  content_type :json
+  response = HTTParty.get("http://events.hooplanow.com/api/v1/places/#{params[:id]}.json",
+    query: { key: config['apikey'] })
+  @place = response.body
+  @place
 end
 
 get '/events/' do
