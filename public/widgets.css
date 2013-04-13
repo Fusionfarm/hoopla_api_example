@@ -1,0 +1,18 @@
+.hoopla-events {
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 10px;
+  width: 500px;
+}
+
+.hoopla-loading {
+  font-weight: bold;
+}
+
+.hoopla-event-name {
+  font-style: italic;
+}
+
+.hoopla-event-date {
+  font-weight: bold;
+}
