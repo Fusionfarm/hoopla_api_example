@@ -1,0 +1,13 @@
+%h1 Events
+%ul
+  - @events.each do |event|
+    %li
+      %a.event_name{:href => event[:url]}= event[:name]
+      @
+      %a.place_name{:href => event[:place][:url]}= event[:place][:name]
+      %p
+        %span.start_date= Time.parse(event[:this_recurrence][:start_date]).strftime("%B %e, %Y %l:%M %P")
+        - if event[:this_recurrence][:end_date]
+          until
+          %span.end_date= Time.parse(event[:this_recurrence][:end_date]).strftime("%B %e, %Y %l:%M %P")
+      %p.description= event[:description]
