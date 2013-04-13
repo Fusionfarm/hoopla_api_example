@@ -1,0 +1,14 @@
+#!/bin/bash
+set -o errexit
+
+sudo apt-get update
+sudo apt-get install -y \
+  ruby1.9.1 \
+  git-core \
+  make \
+  gcc \
+  g++ \
+  libffi-dev \
+  ruby1.9.1-dev
+
+sudo gem install bundler
