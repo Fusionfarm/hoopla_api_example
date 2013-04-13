@@ -5,7 +5,14 @@
       input[type=submit] { margin-top: 15px; }
 
   %body
-    %form{ action: "/events"}
+    -if @valid
+      %h2 Your event has been saved!
+    -elsif @error_messages
+      %h2 Your error could not be saved
+      %ul
+        -@error_messages.each do |error_message|
+          %li=error_message
+    %form{ action: "/events", method: "post" }
       %label Name
       %input{ type: "text", name: "name", id: "event-name" }
       %br

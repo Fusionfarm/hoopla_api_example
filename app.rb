@@ -8,12 +8,8 @@ set :views, Proc.new { File.join(root, "views") }
 
 config = YAML.load_file('config.yml')
 
-get '/hi' do
-  "Hello World!"
-end
-
-get '/events/new' do
-  @categories = %w(
+def get_categories
+ %w(
     Arts
     Auditions
     Comedy
@@ -42,10 +38,42 @@ get '/events/new' do
     Seminars/Workshops
     Valentine's Day
   )
+end
+
+get '/hi' do
+  "Hello World!"
+end
+
+get '/events/new' do
+  @categories = get_categories
   haml :'events/new'
 end
 
 post '/events' do
+  require 'time'
+  start_date = Time.parse("#{params[:event_date]} #{params[:start_time]}")
+  end_date = Time.parse("#{params[:event_date]} #{params[:end_time]}")
+  end_date += (24*60*60) if end_date < start_date
+  response = HTTParty.post("http://events.hooplanow.com/api/v1/events.json", 
+    body: { 
+      key: config['apikey'], 
+      event: { 
+        name: params[:name], 
+        description: params[:description] 
+      },
+      dates: [
+        { 
+          start: start_date.strftime("%B %e, %Y %H:%I"), 
+          end: end_date.strftime("%B %e, %Y %H:%I")
+        }
+      ],
+      tags: params[:tags]
+    })
+  body = MultiJson.load(response.body, :symbolize_keys => true)
+  @valid = body[:valid]
+  @error_messages = body[:error_messages] unless @valid
+  @categories = get_categories
+  haml :'events/new'
 end
 
 post '/search-places.json' do
