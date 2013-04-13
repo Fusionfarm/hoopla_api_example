@@ -5,6 +5,8 @@ source "http://rubygems.org/"
 gem "sinatra"
 
 gem "httparty", "~> 0.11.0"
+gem "haml", "~> 4.0.2"
+gem "thin", "~> 1.5.1"
 
 # setup our test group and require rspec
 group :test do
