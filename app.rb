@@ -64,6 +64,23 @@ get '/place.json' do
   @place
 end
 
+# Example:
+#
+#     /events.json?callback=foo&event_categories[]=1
+get '/events.json' do
+  callback = params[:callback]
+  id = params[:event_categories].first.to_i
+
+  parsed = HTTParty.get("http://events.hooplanow.com/api/v1/events.json?key=#{ config['apikey'] }&event_categories[]=#{ id }")
+  json = MultiJson.dump(parsed)
+
+  if callback
+    "#{ callback }(#{ json })"
+  else
+    json
+  end
+end
+
 get '/events/' do
   @stylesheet_url = params[:stylesheet_url]
   @stylesheet_url = '/default.css' if params[:stylesheet_url].nil?
