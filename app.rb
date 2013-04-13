@@ -54,7 +54,15 @@ get '/events/' do
   @stylesheet_url = params[:stylesheet_url]
   @stylesheet_url = '/default.css' if params[:stylesheet_url].nil?
 
-  other_params = params.map{|key,value| "#{key}=#{value}" }.join('&')
+  other_params = params.map do |key,value|
+    key_value = ""
+    if value.is_a?(Array)
+      key_value = value.map{|item| "#{key}[]=#{item}"}.join('&')
+    else
+      key_value = "#{key}=#{value}"
+    end
+    key_value
+  end.join('%')
 
   response = HTTParty.get("http://events.hooplanow.com/api/v1/events.json?key=#{config['apikey']}&#{other_params}")
   @events = MultiJson.load(response.body, :symbolize_keys => true)
