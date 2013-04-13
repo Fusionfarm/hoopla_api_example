@@ -2,13 +2,14 @@ require 'sinatra'
 require 'httparty'
 require 'haml'
 require 'multi_json'
+require 'json'
 
 set :views, Proc.new { File.join(root, "views") }
 
 config = YAML.load_file('config.yml')
 
 get '/hi' do
-  "Hello, world"
+  "Hello, World"
 end
 
 get '/events/new' do
@@ -47,7 +48,20 @@ end
 post '/events' do
 end
 
-post '/search-places' do
+post '/search-places.json' do
+  content_type :json
+  response = HTTParty.get("http://events.hooplanow.com/api/v1/places.json", 
+    query: { key: config['apikey'], keywords: params[:keywords] })
+  @places = response.body
+  @places
+end
+
+get '/place.json' do
+  content_type :json
+  response = HTTParty.get("http://events.hooplanow.com/api/v1/places/#{params[:id]}.json",
+    query: { key: config['apikey'] })
+  @place = response.body
+  @place
 end
 
 # Example:
@@ -79,10 +93,14 @@ get '/events/' do
       key_value = "#{key}=#{value}"
     end
     key_value
-  end.join('%')
+  end.join('&')
 
   response = HTTParty.get("http://events.hooplanow.com/api/v1/events.json?key=#{config['apikey']}&#{other_params}")
   @events = MultiJson.load(response.body, :symbolize_keys => true)
 
-  haml :'events/index'
+  if params[:widget] == "true"
+    haml :'events/widget'
+  else
+    haml :'events/index'
+  end
 end
